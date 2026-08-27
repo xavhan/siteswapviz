@@ -1,0 +1,336 @@
+@import "./brute.css";
+
+/* Siteswap state graph — brute house style.
+   No colour anywhere: the walk/next/cursor distinctions that used to be orange
+   and blue are carried by border weight, dash pattern and inversion instead. */
+
+body {
+  padding: var(--brute-space-lg) var(--brute-space-xl) var(--brute-space-xl);
+}
+
+/* --- header --- */
+header {
+  display: flex;
+  gap: var(--brute-space-lg);
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: var(--brute-border-normal) solid var(--brute-border);
+  padding-bottom: var(--brute-space-md);
+}
+label {
+  display: flex;
+  gap: var(--brute-space-sm);
+  align-items: center;
+  font-size: var(--brute-text-sm);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  line-height: 1;
+}
+label.grow { flex: 1 1 220px; }
+
+input[type="text"],
+input[type="number"] {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-base);
+  font-weight: var(--brute-weight-bold);
+  color: var(--brute-fg);
+  background: var(--brute-bg);
+  border: var(--brute-border-normal) solid var(--brute-border);
+  border-radius: var(--brute-radius);
+  box-shadow: var(--brute-shadow);
+  padding: var(--brute-space-sm);
+}
+input[type="number"] { width: 62px; }
+label.grow input { flex: 1; letter-spacing: var(--brute-tracking-label-lg); }
+/* error is a dashed border, never red */
+input[aria-invalid="true"] { border-style: dashed; }
+
+button {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-sm);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  line-height: 1;
+  padding: var(--brute-space-md) var(--brute-space-lg);
+  background: var(--brute-white);
+  color: var(--brute-black);
+  border: var(--brute-border-normal) solid var(--brute-border);
+  border-radius: var(--brute-radius);
+  box-shadow: var(--brute-shadow);
+  cursor: pointer;
+}
+button:hover {
+  background-image: repeating-linear-gradient(
+    45deg, var(--brute-hatch) 0px, var(--brute-hatch) 1px,
+    transparent 1px, transparent 6px
+  );
+}
+button:active { transform: translate(2px, 2px); }
+button:disabled {
+  color: var(--brute-gray);
+  border-color: var(--brute-gray);
+  background-image: none;
+  cursor: not-allowed;
+}
+
+input[type="range"] {
+  width: 108px;
+  accent-color: var(--brute-black);
+}
+
+#msg {
+  min-height: 1.5em;
+  margin: var(--brute-space-md) 0 var(--brute-space-sm);
+  font-size: var(--brute-text-sm);
+  color: var(--brute-fg);
+}
+#msg:empty { min-height: 1.5em; }
+#msg.bad {
+  border-left: var(--brute-border-normal) dashed var(--brute-border);
+  padding-left: var(--brute-space-sm);
+}
+
+/* --- panels --- */
+.views {
+  display: grid;
+  grid-template-columns: 396px minmax(0, 1fr);
+  grid-template-rows: 214px minmax(0, 1fr);
+  gap: var(--brute-space-lg);
+  height: calc(100vh - 196px);
+  min-height: 480px;
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: var(--brute-border-normal) solid var(--brute-border);
+}
+.panel-head {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--brute-space-sm);
+  padding: var(--brute-space-sm);
+  font-size: var(--brute-text-xs);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  line-height: 1;
+  border-bottom: var(--brute-border-thin) solid var(--brute-border);
+}
+.panel-head a,
+.doclink {
+  color: var(--brute-black);
+  text-decoration: none;
+  border: var(--brute-border-thin) solid var(--brute-border);
+  padding: 2px var(--brute-space-xs);
+  font-size: var(--brute-text-xs);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+.doclink {
+  border-width: var(--brute-border-normal);
+  padding: var(--brute-space-md) var(--brute-space-lg);
+  line-height: 1;
+}
+.panel-head a:hover,
+.doclink:hover {
+  background-image: repeating-linear-gradient(
+    45deg, var(--brute-hatch) 0px, var(--brute-hatch) 1px,
+    transparent 1px, transparent 6px
+  );
+}
+.panel-head a:active,
+.doclink:active { transform: translate(1px, 1px); }
+
+.stagewrap { grid-area: 1 / 1 / 3 / 2; }
+.ladderwrap { grid-area: 1 / 2 / 2 / 3; }
+.graphwrap { grid-area: 2 / 2 / 3 / 3; }
+
+#stage { flex: 1; min-height: 0; }
+#stage svg { display: block; margin: 0 auto; }
+.ctl {
+  display: flex;
+  gap: var(--brute-space-md);
+  align-items: center;
+  padding: var(--brute-space-sm);
+  border-top: var(--brute-border-thin) solid var(--brute-border);
+}
+
+#ladder {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: grid;
+  align-content: center;
+}
+/* auto margins centre it when it fits and collapse to 0 when it overflows,
+   so a wide ladder still scrolls from its true start */
+#ladder svg { display: block; margin: 0 auto; }
+#graph { flex: 1; min-height: 0; overflow: auto; }
+#graph svg { display: block; margin: 0 auto; }
+
+footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: var(--brute-space-md);
+  padding: var(--brute-space-sm) 0;
+  background: var(--brute-bg);
+  border-top: var(--brute-border-thin) solid var(--brute-border);
+  font-size: var(--brute-text-sm);
+  color: var(--brute-gray);
+}
+footer.closed {
+  color: var(--brute-fg);
+  font-weight: var(--brute-weight-bold);
+}
+
+/* --- state graph --- */
+/* Background edges are black at low alpha: gray is reserved for muted text,
+   and 400 solid black curves would drown the nodes. */
+.edge {
+  fill: none;
+  stroke: var(--brute-black);
+  stroke-width: var(--brute-border-thin);
+  opacity: 0.16;
+  marker-end: url(#arrow);
+}
+.edge.hot { stroke-width: var(--brute-border-thick); opacity: 1; }
+.edge.next { stroke-width: var(--brute-border-normal); stroke-dasharray: 5 3; opacity: 1; }
+.edge.lit { stroke-width: var(--brute-border-normal); opacity: 1; }
+svg.hovering .edge:not(.lit):not(.hot):not(.next) { opacity: 0.06; }
+svg:has(.edge.hot) .edge:not(.hot):not(.lit):not(.next) { opacity: 0.1; }
+
+.elabel {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-xs);
+  font-weight: var(--brute-weight-bold);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: var(--brute-black);
+  paint-order: stroke;
+  stroke: var(--brute-white);
+  stroke-width: 4px;
+  opacity: 0;
+  pointer-events: none;
+}
+.elabel.hot, .elabel.next, .elabel.lit { opacity: 1; }
+
+.tick {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-xs);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  fill: var(--brute-gray);
+  dominant-baseline: central;
+}
+
+.node { cursor: pointer; }
+.node .box {
+  fill: var(--brute-white);
+  stroke: var(--brute-black);
+  stroke-width: var(--brute-border-normal);
+}
+.node text {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-sm);
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--brute-black);
+  pointer-events: none;
+}
+.node:hover .box { fill: url(#hatch); }
+
+/* on the walk: inverted, brute's one "active" treatment */
+.node.on .box { fill: var(--brute-black); }
+.node.on text { fill: var(--brute-white); }
+.node.on:hover .box { fill: url(#hatch-inv); }
+/* reachable next: dashed, the same device brute uses for a non-settled state */
+.node.next .box { stroke-dasharray: 5 3; }
+/* border ladder: 3px focus, 4px active accent */
+.node.focus .box { stroke-width: var(--brute-border-thick); stroke-dasharray: none; }
+.node.cursor .box { stroke-width: var(--brute-border-heavy); stroke-dasharray: none; }
+/* where the walk began */
+.halo { fill: none; stroke: none; }
+.node.start .halo {
+  stroke: var(--brute-black);
+  stroke-width: var(--brute-border-normal);
+}
+
+/* --- ladder --- */
+.rail { stroke: var(--brute-black); stroke-width: var(--brute-border-thin); }
+.hand, .beatno, .throwno, .slab, .handtag, .beattag {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-xs);
+}
+.hand {
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  fill: var(--brute-black);
+}
+.beatno { fill: var(--brute-gray); text-anchor: middle; }
+.beatdot { fill: var(--brute-black); }
+.throwno { font-weight: var(--brute-weight-bold); fill: var(--brute-black); }
+.hole { fill: var(--brute-white); stroke: var(--brute-black); stroke-width: 1; }
+
+.arc {
+  fill: none;
+  stroke: var(--brute-black);
+  stroke-width: var(--brute-border-thin);
+  opacity: 0.4;
+}
+/* thrown before the window or landing after it */
+.arc.clipped { opacity: 0.18; stroke-dasharray: 4 3; }
+/* airborne across the cursor — these are exactly the state's set bits */
+.arc.crossing {
+  stroke-width: var(--brute-border-thick);
+  stroke-dasharray: none;
+  opacity: 1;
+}
+.cursorline {
+  stroke: var(--brute-black);
+  stroke-width: var(--brute-border-thin);
+  stroke-dasharray: 3 3;
+}
+.slab { text-anchor: middle; letter-spacing: 0.06em; fill: var(--brute-gray); }
+.slab.at { fill: var(--brute-black); font-weight: var(--brute-weight-bold); }
+.hit { fill: transparent; cursor: crosshair; }
+
+/* --- animation --- */
+.handbar { fill: var(--brute-black); }
+.handtag, .beattag {
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  text-anchor: middle;
+  fill: var(--brute-gray);
+}
+/* throw height was a hue; it is now the digit printed on the ball */
+.ball circle {
+  fill: var(--brute-white);
+  stroke: var(--brute-black);
+  stroke-width: var(--brute-border-normal);
+}
+.ball text {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-xs);
+  font-weight: var(--brute-weight-bold);
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--brute-black);
+}
+.traj {
+  fill: none;
+  stroke: var(--brute-black);
+  stroke-width: var(--brute-border-thin);
+  opacity: 0.22;
+  stroke-linecap: round;
+}

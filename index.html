@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Siteswap state graph</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <label>balls <input id="n" type="number" min="1" max="9" value="3" /></label>
+      <label>max height <input id="h" type="number" min="1" max="9" value="5" /></label>
+      <label class="grow">siteswap <input id="pattern" type="text" placeholder="531" spellcheck="false" autocomplete="off" /></label>
+      <button id="clear" type="button">clear</button>
+      <a class="doclink" href="/docs.html">docs</a>
+    </header>
+    <p id="msg"></p>
+    <div class="views">
+      <section class="panel stagewrap">
+        <h2 class="panel-head">pattern<a href="/docs.html#siteswap" aria-label="how to read this">?</a></h2>
+        <div id="stage"></div>
+        <div class="ctl">
+          <button id="play" type="button">play</button>
+          <label>tempo <input id="tempo" type="range" min="120" max="700" value="500" /></label>
+        </div>
+      </section>
+      <section class="panel ladderwrap">
+        <h2 class="panel-head">ladder<a href="/docs.html#ladder" aria-label="how to read this">?</a></h2>
+        <div id="ladder"></div>
+      </section>
+      <section class="panel graphwrap">
+        <h2 class="panel-head">state graph<a href="/docs.html#states" aria-label="how to read this">?</a></h2>
+        <div id="graph"></div>
+      </section>
+    </div>
+    <footer id="readout"></footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

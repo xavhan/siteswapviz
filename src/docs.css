@@ -1,0 +1,122 @@
+@import "./brute.css";
+
+/* Docs — brute house style. Prose is capped tighter than --brute-max-width
+   because a monospace measure that long is hard to track across. */
+
+body {
+  padding: var(--brute-space-lg) var(--brute-space-xl) var(--brute-space-2xl);
+}
+.wrap { max-width: 82ch; margin: 0 auto; }
+
+header {
+  display: flex;
+  gap: var(--brute-space-lg);
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: var(--brute-border-normal) solid var(--brute-border);
+  padding-bottom: var(--brute-space-md);
+  margin-bottom: var(--brute-space-xl);
+}
+header h1 {
+  margin: 0;
+  font-size: var(--brute-text-lg);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label-lg);
+  text-transform: uppercase;
+}
+
+a {
+  color: var(--brute-black);
+  text-decoration: none;
+  border-bottom: var(--brute-border-normal) solid var(--brute-border);
+}
+a:hover {
+  background-image: repeating-linear-gradient(
+    45deg, var(--brute-hatch) 0px, var(--brute-hatch) 1px,
+    transparent 1px, transparent 6px
+  );
+}
+.back {
+  font-size: var(--brute-text-sm);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+nav {
+  border: var(--brute-border-normal) solid var(--brute-border);
+  padding: var(--brute-space-md);
+  margin-bottom: var(--brute-space-2xl);
+}
+nav p {
+  margin: 0 0 var(--brute-space-sm);
+  font-size: var(--brute-text-xs);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+}
+nav ol { margin: 0; padding-left: var(--brute-space-xl); }
+nav li { margin-bottom: var(--brute-space-xs); }
+
+section { margin-bottom: var(--brute-space-2xl); }
+h2 {
+  font-size: var(--brute-text-md);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label-lg);
+  text-transform: uppercase;
+  margin: 0 0 var(--brute-space-md);
+  padding-bottom: var(--brute-space-sm);
+  border-bottom: var(--brute-border-thick) solid var(--brute-border);
+}
+h3 {
+  font-size: var(--brute-text-base);
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  margin: var(--brute-space-xl) 0 var(--brute-space-sm);
+}
+p { margin: 0 0 var(--brute-space-md); }
+ul { margin: 0 0 var(--brute-space-md); padding-left: var(--brute-space-xl); }
+li { margin-bottom: var(--brute-space-xs); }
+code {
+  font-family: var(--brute-font);
+  font-weight: var(--brute-weight-bold);
+}
+.muted { color: var(--brute-gray); }
+
+pre {
+  font-family: var(--brute-font);
+  font-size: var(--brute-text-sm);
+  line-height: 1.45;
+  border: var(--brute-border-normal) solid var(--brute-border);
+  padding: var(--brute-space-md);
+  margin: 0 0 var(--brute-space-md);
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0 0 var(--brute-space-md);
+  font-size: var(--brute-text-sm);
+}
+th, td {
+  border: var(--brute-border-thin) solid var(--brute-border);
+  padding: var(--brute-space-sm);
+  text-align: left;
+}
+th {
+  font-weight: var(--brute-weight-bold);
+  letter-spacing: var(--brute-tracking-label);
+  text-transform: uppercase;
+  border-bottom-width: var(--brute-border-normal);
+}
+
+/* the load-bearing claim in a section */
+.key {
+  border: var(--brute-border-thick) solid var(--brute-border);
+  padding: var(--brute-space-md);
+  margin: 0 0 var(--brute-space-md);
+}
+.key p:last-child { margin-bottom: 0; }

@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Siteswap — notation, state graphs, ladder diagrams</title>
+    <link rel="stylesheet" href="/src/docs.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Reading the three views</h1>
+        <a class="back" href="/">&larr; back to the app</a>
+      </header>
+
+      <nav>
+        <p>Contents</p>
+        <ol>
+          <li><a href="#siteswap">Siteswap notation</a></li>
+          <li><a href="#states">State graphs</a></li>
+          <li><a href="#ladder">Ladder diagrams</a></li>
+          <li><a href="#together">How the three line up</a></li>
+        </ol>
+      </nav>
+
+      <section id="siteswap">
+        <h2>1. Siteswap notation</h2>
+
+        <p>
+          Juggling happens on a steady pulse. Each <em>beat</em>, one hand throws
+          one object, and the hands alternate: right, left, right, left. A
+          siteswap is one number per beat, and that number answers a single
+          question — <strong>how many beats until this object is thrown
+          again?</strong>
+        </p>
+
+        <p>
+          So a <code>3</code> means "this ball comes back to a hand three beats
+          from now". A <code>5</code> is thrown higher, because it has to stay up
+          for five beats. The pattern repeats, so <code>531</code> means throw a
+          5, then a 3, then a 1, then start over.
+        </p>
+
+        <p>Two consequences fall straight out of that definition:</p>
+
+        <ul>
+          <li>
+            <strong>Odd numbers cross, even numbers don't.</strong> Hands
+            alternate every beat, so a throw lands in the other hand exactly when
+            its height is odd.
+          </li>
+          <li>
+            <strong>The average is the number of balls.</strong>
+            <code>531</code> averages <code>(5+3+1)/3 = 3</code>, so it is a
+            3-ball pattern. This is not a coincidence or a rule of thumb — it
+            follows from every ball being thrown once per period.
+          </li>
+        </ul>
+
+        <h3>What makes a siteswap valid</h3>
+
+        <p>
+          Two balls cannot land on the same beat — one hand, one catch. A throw
+          made at beat <code>i</code> with height <code>a[i]</code> lands at beat
+          <code>i + a[i]</code>. So a sequence is valid exactly when all the
+          values <code>(i + a[i]) mod period</code> are different.
+        </p>
+
+        <pre>531  ->  period 3
+
+  beat i    throw a[i]    lands at (i + a[i]) mod 3
+  ------    ----------    -------------------------
+     0          5                    2
+     1          3                    1
+     2          1                    0
+
+  landing beats {2, 1, 0} are all different  ->  VALID
+
+
+521  ->  average (5+2+1)/3 = 2.67, not a whole number  ->  INVALID</pre>
+
+        <p>
+          The app reports both failures separately, because they mean different
+          things: a bad average means you have written something that is not a
+          juggling pattern at all, while a collision means you have written a
+          real-looking pattern where two balls arrive at once.
+        </p>
+
+        <h3>The small numbers</h3>
+
+        <table>
+          <thead>
+            <tr><th>Throw</th><th>Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>0</code></td><td>An empty hand. Nothing is thrown, because nothing was there to throw.</td></tr>
+            <tr><td><code>1</code></td><td>A fast hand-across. Thrown and caught one beat later, so it barely rises.</td></tr>
+            <tr><td><code>2</code></td><td>A hold. The ball is thrown two beats ahead, which is the same hand's next turn, so in practice you just keep hold of it.</td></tr>
+          </tbody>
+        </table>
+
+        <p class="muted">
+          Throws above 9 use letters, so <code>a</code> is 10, <code>b</code> is
+          11, up to <code>z</code> at 35. The app accepts these, though it caps
+          the graph at height 9.
+        </p>
+      </section>
+
+      <section id="states">
+        <h2>2. State graphs</h2>
+
+        <p>
+          A siteswap tells you what to throw. A <em>state</em> tells you what is
+          already in the air — and that is what decides which throws are even
+          available to you next.
+        </p>
+
+        <p>
+          Write down the next few beats and mark the ones where something is
+          already scheduled to land. That row of marks is the state.
+        </p>
+
+        <pre>state 11100, for 3 balls
+
+  beat:       now    +1     +2     +3     +4
+              ---    ---    ---    ---    ---
+               1      1      1      0      0
+               |      |      |
+               |      |      `-- a ball lands 2 beats from now
+               |      `--------- a ball lands 1 beat from now
+               `---------------- a ball lands NOW: it is in your hand,
+                                 so you must throw it this beat</pre>
+
+        <p>
+          The leftmost digit is the one that matters most. If it is
+          <code>1</code> you are holding a ball and must throw it. If it is
+          <code>0</code> your hand is empty and the only legal "throw" is
+          <code>0</code> — you do nothing and wait.
+        </p>
+
+        <h3>Making a throw</h3>
+
+        <p>
+          Throwing does two things at once: a beat passes, and the ball you threw
+          gets booked in for its landing.
+        </p>
+
+        <pre>11100  --throw 5-->  11001
+
+  1 1 1 0 0    the leading 1 is the ball now in your hand
+   \ \ \ \     one beat passes: everything shifts one step closer
+    1 1 0 0    
+    1 1 0 0 1  the 5 lands 5 beats out, so set the bit at position 5-1 = 4
+
+  = 11001</pre>
+
+        <p>
+          If the slot where the ball would land is already taken, the throw is
+          illegal — that is the collision rule again, seen from the other side.
+          This is why each state only offers a handful of throws.
+        </p>
+
+        <h3>Ground and excited states</h3>
+
+        <p>
+          With <code>n</code> balls, the calmest possible state is
+          <code>n</code> ones packed at the front: everything lands as soon as it
+          can, nothing is stacked up ahead. That is the
+          <strong>ground state</strong>, and it is the state a plain cascade
+          lives in. Every other state is <strong>excited</strong> — you have
+          thrown something high and now have a gap to work around.
+        </p>
+
+        <p>
+          For a maximum throw height <code>h</code>, there are
+          <code>C(h, n)</code> states in total: choose which
+          <code>n</code> of the <code>h</code> upcoming beats are occupied. At 3
+          balls and height 5 that is 10 states; at 5 balls and height 9 it is 126.
+        </p>
+
+        <h3>Why the graph is shaped like that</h3>
+
+        <p>
+          The app arranges states in rows by <em>excitation</em>: add up the
+          positions of the set bits and subtract the ground state's total. The
+          ground state scores 0, and higher rows mean more of your future is
+          already committed.
+        </p>
+
+        <div class="key">
+          <p>
+            A throw of height <code>t</code> in an <code>n</code>-ball pattern
+            moves you down exactly <code>t − n</code> rows.
+          </p>
+          <p>
+            So throwing <code>n</code> keeps you on the same row — that's the
+            cascade, sitting still on the ground row. Throwing higher than
+            <code>n</code> pushes you down into excited territory, and throwing
+            lower brings you back up. Since a valid pattern returns to where it
+            started, its throws must balance around <code>n</code>, which is the
+            average rule showing up a third time.
+          </p>
+        </div>
+
+        <p>
+          That identity is the whole reason the layout is readable. Rows are
+          not a drawing convenience, they are arithmetic, and you can read a
+          pattern's throw heights off the graph by counting how far each arrow
+          travels.
+        </p>
+
+        <p>
+          <strong>A pattern is a closed walk.</strong> Any loop through the graph
+          that returns to its starting state is a valid siteswap, and every valid
+          siteswap is such a loop. Clicking your way around the graph in the app
+          builds one; typing a pattern highlights it.
+        </p>
+      </section>
+
+      <section id="ladder">
+        <h2>3. Ladder diagrams</h2>
+
+        <p>
+          The state graph shows every possibility but says nothing about time.
+          The ladder diagram is the opposite: it is one pattern, laid out on a
+          timeline.
+        </p>
+
+        <p>
+          Two horizontal rails are the two hands. Time runs left to right, one
+          tick per beat. Every throw is an arc from the beat it was thrown to the
+          beat it lands. Because the hands alternate, an arc crosses between the
+          rails exactly when its throw is odd — the crossing is drawn, not
+          asserted.
+        </p>
+
+        <pre>531, first six beats
+
+  beat   hand   throw   lands at   in hand   crosses?
+  ----   ----   -----   --------   -------   --------
+    0      R      5         5         L      yes
+    1      L      3         4         R      yes
+    2      R      1         3         L      yes
+    3      L      5         8         R      yes
+    4      R      3         7         L      yes
+    5      L      1         6         R      yes
+
+  every throw in 531 is odd, so every arc crosses
+  -- that is what makes it a cascade
+
+
+441, first three beats
+
+  beat   hand   throw   lands at   in hand   crosses?
+  ----   ----   -----   --------   -------   --------
+    0      R      4         4         R      no
+    1      L      4         5         L      no
+    2      R      1         3         L      yes</pre>
+
+        <p>
+          What the ladder makes obvious is <em>overlap</em>. At any moment you
+          can count the arcs passing overhead, and that count is the number of
+          balls — which is why a valid pattern's average has to be a whole
+          number.
+        </p>
+
+        <h3>The connection to the state graph</h3>
+
+        <p>
+          Here is the part worth internalising, because it is the reason the app
+          shows both diagrams at once.
+        </p>
+
+        <div class="key">
+          <p>
+            <strong>A state is a vertical slice of a ladder diagram.</strong>
+            Drop a line at beat <code>k</code>. The arcs crossing that line are
+            the balls in the air. Measure how far ahead each one lands, and those
+            offsets are exactly the set bits of the state at beat <code>k</code>.
+          </p>
+        </div>
+
+        <pre>531, cursor at beat 3
+
+  thrown at    height    lands at    offset from beat 3
+  ---------    ------    --------    ------------------
+      0           5          5              +2
+      1           3          4              +1
+      2           1          3              +0
+
+  offsets {0, 1, 2}  ->  bits 0, 1 and 2 set  ->  state 11100</pre>
+
+        <p>
+          Hover any beat on the ladder in the app and it does this live: the
+          crossing arcs thicken, the state string under that beat lights up, and
+          the matching node in the state graph is ringed.
+        </p>
+
+        <p class="muted">
+          The faint dashed arcs at either end are throws made before the window
+          starts or landing after it ends. They are drawn because without them
+          the slice at beat 0 would appear to cross nothing, while its state
+          plainly says three balls are airborne.
+        </p>
+      </section>
+
+      <section id="together">
+        <h2>4. How the three line up</h2>
+
+        <p>
+          The same pattern, in three registers. Each view answers a question the
+          other two cannot.
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>View</th><th>Answers</th><th>Blind to</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Animation</td>
+              <td>What does it look like? How high is each throw?</td>
+              <td>Structure — why these throws and not others</td>
+            </tr>
+            <tr>
+              <td>Ladder</td>
+              <td>What happens on each beat, and which balls overlap?</td>
+              <td>Everything you did <em>not</em> throw</td>
+            </tr>
+            <tr>
+              <td>State graph</td>
+              <td>Where else could this pattern have gone?</td>
+              <td>Time — a walk has no tempo</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          They are locked to one beat counter. Play the animation and the ladder
+          cursor advances with it while the state graph lights the node you are
+          standing on. Pause and hover a beat to scrub all three at once.
+        </p>
+
+        <p>
+          <a href="/">Back to the app &rarr;</a>
+        </p>
+      </section>
+    </div>
+  </body>
+</html>
