@@ -24,6 +24,7 @@ const stageEl = $("stage");
 const playEl = $<HTMLButtonElement>("play");
 const tempoEl = $<HTMLInputElement>("tempo");
 const readoutEl = $("readout");
+const presetsEl = $("presets");
 
 const MAX_H = 9;
 
@@ -102,6 +103,81 @@ function onClick(ev: Event) {
   patEl.value = closed ? patternString(throws) : "";
   say(closed ? `${patternString(throws)} closes here` : "");
   draw();
+  syncUrl();
+}
+
+/** Well-known patterns, by ball count. Nothing above height 9 — that is the cap. */
+const CLASSICS: [string, [string, string][]][] = [
+  ["3 balls", [
+    ["3", "cascade"],
+    ["423", "one up two up"],
+    ["441", ""],
+    ["531", ""],
+    ["51", "shower"],
+    ["45141", ""],
+    ["50505", "columns"],
+    ["55500", ""],
+    ["4413", ""],
+  ]],
+  ["4 balls", [
+    ["4", "fountain"],
+    ["71", "shower"],
+    ["552", ""],
+    ["633", "half box"],
+    ["534", ""],
+    ["5551", ""],
+    ["7531", ""],
+    ["5344", ""],
+  ]],
+  ["5 balls", [
+    ["5", "cascade"],
+    ["744", ""],
+    ["645", ""],
+    ["97531", ""],
+    ["66661", ""],
+  ]],
+  ["6+ balls", [
+    ["6", "fountain"],
+    ["7", "cascade"],
+    ["8", "fountain"],
+    ["9", "cascade"],
+  ]],
+];
+
+presetsEl.innerHTML = CLASSICS.map(
+  ([group, items]) =>
+    `<h3>${group}</h3>` +
+    items
+      .map(([p, name]) => `<button type="button" data-p="${p}">${p}${name ? ` <small>${name}</small>` : ""}</button>`)
+      .join(""),
+).join("");
+
+presetsEl.addEventListener("click", (ev) => {
+  const p = (ev.target as Element).closest("button")?.dataset.p;
+  if (!p) return;
+  patEl.value = p;
+  onPattern();
+});
+
+/** Closed patterns round-trip as the pattern; anything else keeps just the graph size. */
+function syncUrl() {
+  const closed = walk.length > 1 && walk[0] === walk[walk.length - 1];
+  const pat = closed ? patternString(throws) : "";
+  history.replaceState(null, "", `#${pat ? `p=${pat}` : `n=${n}&h=${h}`}`);
+  for (const b of presetsEl.querySelectorAll("button"))
+    b.setAttribute("aria-pressed", String(b.dataset.p === pat));
+}
+
+function applyUrl() {
+  const q = new URLSearchParams(location.hash.slice(1));
+  const qn = Number(q.get("n")) || 0;
+  if (qn) {
+    nEl.value = String(qn);
+    hEl.value = String(Number(q.get("h")) || qn);
+    onDims();
+  }
+  patEl.value = q.get("p") ?? (location.hash ? "" : "531");
+  onPattern(); // draws in every branch, empty pattern included
 }
 
 function onPattern() {
@@ -110,7 +186,8 @@ function onPattern() {
     walk = [];
     throws = [];
     say("");
-    return draw();
+    draw();
+    return syncUrl();
   }
 
   const parsed = parsePattern(raw);
@@ -144,6 +221,7 @@ function onPattern() {
       .join(" · "),
   );
   draw();
+  syncUrl();
 }
 
 function onDims() {
@@ -161,6 +239,7 @@ function onDims() {
     say("");
   }
   draw();
+  syncUrl();
 }
 
 /** Rebuild the stage only when the pattern itself changes — draw() runs every beat. */
@@ -254,7 +333,8 @@ $("clear").addEventListener("click", () => {
   patEl.value = "";
   say("");
   draw();
+  syncUrl();
 });
 
-patEl.value = "531";
-onPattern();
+window.addEventListener("hashchange", applyUrl);
+applyUrl();
