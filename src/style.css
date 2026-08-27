@@ -230,6 +230,41 @@ footer.closed {
   font-weight: var(--brute-weight-bold);
 }
 
+/* --- narrow screens ---
+   The three-column board becomes one stacked column and the page scrolls
+   normally: viewport-height panels leave nothing readable on a phone. */
+@media (max-width: 860px) {
+  body { padding: var(--brute-space-md) var(--brute-space-md) var(--brute-space-lg); }
+  header { gap: var(--brute-space-md); }
+  label.grow { flex-basis: 100%; }
+  .doclink { margin-left: auto; }
+
+  .views {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    height: auto;
+    min-height: 0;
+  }
+  .stagewrap, .ladderwrap, .graphwrap, .presetwrap { grid-area: auto; }
+
+  /* the stage svg is a fixed 380 wide — let it scale rather than clip */
+  #stage { height: 300px; }
+  #stage svg { max-width: 100%; height: 100%; }
+  #ladder { height: 190px; }
+  #graph { height: 60vh; }
+  /* touch scrolling inside a panel needs the panel to own the gesture */
+  #ladder, #graph, #presets { -webkit-overflow-scrolling: touch; }
+
+  /* a 26-row column would be a screen and a half; flow them instead */
+  #presets { overflow-y: visible; display: flex; flex-wrap: wrap; gap: var(--brute-space-xs); }
+  #presets h3 { flex-basis: 100%; margin: var(--brute-space-sm) 0 0; }
+  #presets button { width: auto; margin-bottom: 0; }
+  #presets button small { float: none; margin-left: var(--brute-space-xs); }
+
+  footer { position: static; }
+}
+
 /* --- state graph --- */
 /* Background edges are black at low alpha: gray is reserved for muted text,
    and 400 solid black curves would drown the nodes. */
