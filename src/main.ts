@@ -63,7 +63,7 @@ function draw() {
   readoutEl.textContent = !walk.length
     ? `${graph.nodes.size} states · ${graph.edges.length} throws · click a state to start walking`
     : closed
-      ? `${patternString(throws)} — closed cycle, period ${throws.length}`
+      ? `${patternString(throws)} — closed walk, period ${throws.length}`
       : `${patternString(throws) || "—"} — open walk · ${throwsFrom(walk[walk.length - 1]!, h).length} throws from here`;
   readoutEl.className = closed ? "closed" : "";
 }

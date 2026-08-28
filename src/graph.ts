@@ -18,7 +18,7 @@ export function renderSvg({ graph, h, walk, throws, focus }: View): string {
   const onWalk = new Set(walk);
 
   // While a walk is open, its last state is the cursor: show every throw
-  // available from there. A closed cycle is finished, so it gets no options.
+  // available from there. A closed walk is finished, so it gets no options.
   const closed = walk.length > 1 && walk[0] === walk[walk.length - 1];
   const cursor = walk.length && !closed ? walk[walk.length - 1]! : null;
   const nextEdge = new Set<string>();
