@@ -128,3 +128,47 @@ select:focus {
   background-color: var(--brute-focus);
   box-shadow: none;
 }
+
+/* Scrollbars. The ladder's own vocabulary at bar scale: a hairline rail with a
+   square dot pinned at each end, and a black slug riding it. Discretion comes
+   from weight, not colour — the slug is 4px at rest, 8px under the pointer.
+   Styling these opts out of macOS overlay bars, so a bar now holds 12px.
+   Chrome drops ::-webkit-scrollbar the moment scrollbar-width/-color is set,
+   so the standard properties are fenced off to browsers without the pseudos. */
+@supports not selector(::-webkit-scrollbar) {
+  html { scrollbar-width: thin; scrollbar-color: var(--brute-black) transparent; }
+}
+
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* the rail and its two end dots, painted as track background layers —
+   ::-webkit-scrollbar-button never renders on macOS. Everything is flush to
+   the outer edge so the bar sits against the container's own border. */
+::-webkit-scrollbar-track:vertical {
+  background:
+    linear-gradient(var(--brute-black) 0 0) 100% 0 / 4px 4px no-repeat,
+    linear-gradient(var(--brute-black) 0 0) 100% 100% / 4px 4px no-repeat,
+    linear-gradient(var(--brute-hatch) 0 0) 100% 0 / 1px 100% no-repeat;
+}
+::-webkit-scrollbar-track:horizontal {
+  background:
+    linear-gradient(var(--brute-black) 0 0) 0 100% / 4px 4px no-repeat,
+    linear-gradient(var(--brute-black) 0 0) 100% 100% / 4px 4px no-repeat,
+    linear-gradient(var(--brute-hatch) 0 0) 0 100% / 100% 1px no-repeat;
+}
+
+/* the slug, pushed to that same edge by a one-sided transparent border */
+::-webkit-scrollbar-thumb {
+  background: var(--brute-black);
+  background-clip: content-box;
+  border: 0 solid transparent;
+  min-height: var(--brute-space-xl);
+  min-width: var(--brute-space-xl);
+}
+::-webkit-scrollbar-thumb:vertical { border-left-width: var(--brute-space-sm); }
+::-webkit-scrollbar-thumb:horizontal { border-top-width: var(--brute-space-sm); }
+/* ponytail: hover fattens the slug — a scroll-triggered flash needs a scroll
+   listener and a timeout, add it if hover proves too quiet */
+:hover::-webkit-scrollbar-thumb:vertical { border-left-width: var(--brute-space-xs); }
+:hover::-webkit-scrollbar-thumb:horizontal { border-top-width: var(--brute-space-xs); }
