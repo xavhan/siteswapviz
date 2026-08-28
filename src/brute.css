@@ -168,7 +168,9 @@ select:focus {
 }
 ::-webkit-scrollbar-thumb:vertical { border-left-width: var(--brute-space-sm); }
 ::-webkit-scrollbar-thumb:horizontal { border-top-width: var(--brute-space-sm); }
-/* ponytail: hover fattens the slug — a scroll-triggered flash needs a scroll
-   listener and a timeout, add it if hover proves too quiet */
-:hover::-webkit-scrollbar-thumb:vertical { border-left-width: var(--brute-space-xs); }
-:hover::-webkit-scrollbar-thumb:horizontal { border-top-width: var(--brute-space-xs); }
+/* Hovering the surface fattens its slug. The root is excluded: the pointer is
+   always somewhere on the page, so html:hover would pin the page bar wide open.
+   ponytail: a scroll-triggered flash needs a scroll listener and a timeout,
+   add it if hover proves too quiet. */
+:not(html):not(body):hover::-webkit-scrollbar-thumb:vertical { border-left-width: var(--brute-space-xs); }
+:not(html):not(body):hover::-webkit-scrollbar-thumb:horizontal { border-top-width: var(--brute-space-xs); }
