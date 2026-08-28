@@ -1,5 +1,6 @@
 import { buildGraph, type Graph } from "./layout";
 import {
+  MAX_HEIGHT,
   ground,
   parsePattern,
   patternString,
@@ -9,8 +10,6 @@ import {
   walkOf,
   type State,
 } from "./siteswap";
-
-const MAX_H = 9;
 
 /** Everything the three views and the URL need, derived once. */
 export type WalkView = {
@@ -99,7 +98,7 @@ export function createWalk(n = 3, h = 5) {
     if (!check.ok) return say(check.error, true);
 
     const maxT = Math.max(...parsed);
-    if (maxT > MAX_H) return say(`throw ${maxT} is above the ${MAX_H} height cap`, true);
+    if (maxT > MAX_HEIGHT) return say(`throw ${maxT} is above the ${MAX_HEIGHT} height cap`, true);
     if (check.balls < 1) return say("no balls in that pattern", true);
 
     const notes: string[] = [];
@@ -141,8 +140,8 @@ export function createWalk(n = 3, h = 5) {
   };
 
   const setDims = (nextN: number, nextH: number) => {
-    n = Math.max(1, Math.min(MAX_H, nextN || 1));
-    h = Math.max(n, Math.min(MAX_H, nextH || n));
+    n = Math.max(1, Math.min(MAX_HEIGHT, nextN || 1));
+    h = Math.max(n, Math.min(MAX_HEIGHT, nextH || n));
     graph = buildGraph(n, h);
     // keep the walk only if every state still exists at this size
     if (!states.every((s) => graph.nodes.has(s))) clear();

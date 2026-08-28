@@ -1,6 +1,7 @@
 import { renderSvg, wireHover } from "./graph";
 import { beatCount, renderLadder } from "./ladder";
 import { buildStage, type Stage } from "./juggler";
+import { MAX_HEIGHT } from "./siteswap";
 import { createWalk } from "./walk";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -17,6 +18,7 @@ const readoutEl = $("readout");
 const presetsEl = $("presets");
 
 const walk = createWalk();
+nEl.max = hEl.max = String(MAX_HEIGHT);
 
 let beat: number | null = null; // ladder cursor, also the animation's current beat
 let stage: Stage | null = null;

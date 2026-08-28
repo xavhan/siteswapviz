@@ -21,7 +21,7 @@ const SLOT_PAD = 30;
 const PAD_X = 104; // left margin holds the level ticks and self-loops
 const PAD_Y = 40;
 const NODE_H = 24;
-const CHAR_W = 7.9; // 13px monospace
+export const CHAR_W = 7.9; // 13px monospace
 
 /** Within a level, order by how far into the future the state is committed. */
 const spread = (s: State, h: number) => Math.max(...bitsOf(s, h));

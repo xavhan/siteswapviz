@@ -1,4 +1,4 @@
-import { throwChar } from "./siteswap";
+import { MAX_HEIGHT, throwChar } from "./siteswap";
 
 const NS = "http://www.w3.org/2000/svg";
 
@@ -10,8 +10,6 @@ const DWELL = 0.4; // beats a hand holds a ball, carrying it from catch to throw
 
 const FLOOR = 52; // hands sit this far off the bottom of the box
 const HEADROOM = 86; // hand zone plus the beat caption
-
-const MAX_THROW = 9; // the app's height cap: what "full height" is calibrated to
 
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 const ease = (u: number) => u * u * (3 - 2 * u);
@@ -28,9 +26,9 @@ export function buildStage(throws: number[], balls: number, boxH: number): Stage
 
   // Absolute px per t², NOT normalised per pattern — so a 5-ball pattern really
   // does tower over a 3-ball one. Flight time is t beats, so apex goes as t².
-  // K is pinned to the tallest LEGAL throw, not this pattern's tallest, so the
+  // K is pinned to the tallest legal throw, not this pattern's tallest, so the
   // scale is identical for every pattern at a given window size.
-  const K = (boxH - HEADROOM) / (MAX_THROW * MAX_THROW);
+  const K = (boxH - HEADROOM) / (MAX_HEIGHT * MAX_HEIGHT);
   const apex = (t: number) => K * t * t;
 
   const throwPos = (beat: number) => ({ x: cx + side(beat) * INNER, y: handY - 6 });

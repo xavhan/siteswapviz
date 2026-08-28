@@ -1,3 +1,4 @@
+import { CHAR_W } from "./layout";
 import { stateString, throwChar, type State } from "./siteswap";
 
 export type LadderView = {
@@ -27,10 +28,10 @@ export function renderLadder(v: LadderView): string {
 
   const p = throws.length;
   const beats = beatCount(throws, closed);
-  const beatW = Math.max(58, h * 7.9 + 20);
+  const beatW = Math.max(58, h * CHAR_W + 20);
   const beatX = (b: number) => PAD_L + b * beatW;
   // the last beat's state string is centred on its tick, so reserve half of it
-  const width = PAD_L + beats * beatW + Math.max(PAD_R, (h * 7.9) / 2 + 10);
+  const width = PAD_L + beats * beatW + Math.max(PAD_R, (h * CHAR_W) / 2 + 10);
   const height = Y_L + BOTTOM;
 
   const throwAt = (b: number) => throws[((b % p) + p) % p]!;

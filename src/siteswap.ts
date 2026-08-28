@@ -1,3 +1,6 @@
+/** The tallest throw the app supports: caps `h`, the graph, and the ball scale. */
+export const MAX_HEIGHT = 9;
+
 // A state is a bitmask over the next `h` beats.
 // Bit i set = something lands i beats from now. Bit 0 set = ball in hand, must throw.
 export type State = number;
