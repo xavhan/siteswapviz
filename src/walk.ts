@@ -28,7 +28,8 @@ export type WalkView = {
   period: number;
   message: string;
   bad: boolean;
-  hash: string;
+  /** Where this walk lives: "/p/531", or "/?n=4&h=6" when it has no notation. */
+  url: string;
   /** The state the walk sits in at beat b, wrapping when it is closed. */
   stateAtBeat: (b: number) => State | null;
 };
@@ -82,7 +83,7 @@ export function createWalk(n = 3, h = 5) {
       period: throws.length,
       message,
       bad,
-      hash: closed ? `p=${sequence}` : `n=${n}&h=${h}`,
+      url: closed ? `/p/${sequence}` : `/?n=${n}&h=${h}`,
       stateAtBeat,
     };
   };
@@ -147,15 +148,19 @@ export function createWalk(n = 3, h = 5) {
     if (!states.every((s) => graph.nodes.has(s))) clear();
   };
 
-  /** Apply a "#p=531" or "#n=4&h=6" hash. Returns the pattern text it read. */
-  const applyHash = (hash: string): string => {
-    const q = new URLSearchParams(hash.replace(/^#/, ""));
+  /**
+   * Apply a URL: "/p/531", "?p=531" and "#p=531" all work, as does "?n=4&h=6".
+   * Returns the pattern text it read, so a caller can put it in the input box.
+   */
+  const applyUrl = (url: string): string => {
+    const [path = "", query = ""] = url.split(/[?#]/, 2);
+    const q = new URLSearchParams(query);
     const qn = Number(q.get("n")) || 0;
     if (qn) setDims(qn, Number(q.get("h")) || qn);
-    const raw = q.get("p") ?? (hash ? "" : "531");
+    const raw = path.match(/\/p\/([0-9a-z]+)$/i)?.[1] ?? q.get("p") ?? (url ? "" : "531");
     setPattern(raw);
     return raw;
   };
 
-  return { view, setPattern, stepTo, setDims, clear, applyHash };
+  return { view, setPattern, stepTo, setDims, clear, applyUrl };
 }

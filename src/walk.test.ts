@@ -9,7 +9,7 @@ test("a valid pattern closes and names itself", () => {
   expect(v.closed).toBe(true);
   expect(v.pattern).toBe("531");
   expect(v.period).toBe(3);
-  expect(v.hash).toBe("p=531");
+  expect(v.url).toBe("/p/531");
   expect(v.message).toContain("ground state");
 });
 
@@ -60,7 +60,7 @@ test("resizing drops a walk whose states no longer exist", () => {
   const v = w.view();
   expect(v.states).toEqual([]);
   expect(v.pattern).toBe("");
-  expect(v.hash).toBe("n=4&h=6");
+  expect(v.url).toBe("/?n=4&h=6");
 });
 
 test("height is clamped to the ball count and the cap", () => {
@@ -71,15 +71,19 @@ test("height is clamped to the ball count and the cap", () => {
   expect(w.view()).toMatchObject({ n: 9, h: 9 });
 });
 
-test("hashes round-trip", () => {
+test("urls round-trip, path or query or hash", () => {
   const w = createWalk();
-  expect(w.applyHash("#p=441")).toBe("441");
-  expect(w.view().hash).toBe("p=441");
+  expect(w.applyUrl("/p/441")).toBe("441");
+  expect(w.view().url).toBe("/p/441");
 
-  w.applyHash("#n=4&h=6");
+  expect(w.applyUrl("?p=531")).toBe("531");
+  expect(w.applyUrl("#p=531")).toBe("531");
+
+  w.applyUrl("/?n=4&h=6");
   expect(w.view()).toMatchObject({ n: 4, h: 6, pattern: "" });
+  expect(w.view().url).toBe("/?n=4&h=6");
 
-  w.applyHash(""); // no hash at all: the default pattern
+  w.applyUrl(""); // nothing in the url at all: the default pattern
   expect(w.view().pattern).toBe("531");
 });
 

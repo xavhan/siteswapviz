@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [{ "source": "/p/:pattern", "destination": "/api/page?p=:pattern" }],
+  "functions": { "api/og.ts": { "includeFiles": "api/assets/**" } }
+}

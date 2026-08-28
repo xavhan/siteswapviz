@@ -28,7 +28,7 @@ let raf = 0;
 let originMs = 0;
 let originBeat = 0;
 let lastWhole = -1;
-let shownHash = "";
+let shownUrl = "";
 
 const beatMs = () => 820 - Number(tempoEl.value); // slider right = faster
 
@@ -58,9 +58,11 @@ function draw() {
   readoutEl.className = v.closed ? "closed" : "";
 
   // guarded: draw() runs every animation beat, and browsers throttle replaceState
-  if (v.hash !== shownHash) {
-    shownHash = v.hash;
-    history.replaceState(null, "", `#${v.hash}`);
+  if (v.url !== shownUrl) {
+    shownUrl = v.url;
+    // a path, not a hash: only what reaches the server can be given a link
+    // preview, and /p/531 is where the preview tags are served from
+    history.replaceState(null, "", v.url);
     for (const b of presetsEl.querySelectorAll("button"))
       b.setAttribute("aria-pressed", String(b.dataset.p === v.pattern));
   }
@@ -237,7 +239,7 @@ $("clear").addEventListener("click", () => {
 });
 
 const load = () => {
-  patEl.value = walk.applyHash(location.hash);
+  patEl.value = walk.applyUrl(location.pathname + location.search + location.hash);
   beat = null;
   draw();
 };
