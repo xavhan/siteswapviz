@@ -4,10 +4,11 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
     "noEmit": true,
     "lib": ["ES2022", "DOM"],
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
-  "include": ["src"]
+  "include": ["src", "api"]
 }
