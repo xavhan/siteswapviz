@@ -1,4 +1,4 @@
-# Siteswap Visualiser
+# Marcel noir
 
 A single-page tool for reading a juggling pattern three ways at once: as an
 animation, as a ladder diagram, and as a walk through a state graph. This file

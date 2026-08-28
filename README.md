@@ -1,13 +1,13 @@
-# siteswap-viz
+# Marcel noir
 
 Shows a juggling pattern three ways at once: an animation, a ladder diagram,
 and a walk through the state graph of every pattern with the same ball count.
 
-**[siteswap-viz.vercel.app](https://siteswap-viz.vercel.app)**
+**[marcel-noir.vercel.app](https://marcel-noir.vercel.app)**
 
-Try [531](https://siteswap-viz.vercel.app/#p=531),
-[97531](https://siteswap-viz.vercel.app/#p=97531),
-or [4 balls, height 6](https://siteswap-viz.vercel.app/#n=4&h=6).
+Try [531](https://marcel-noir.vercel.app/p/531),
+[97531](https://marcel-noir.vercel.app/p/97531),
+or [4 balls, height 6](https://marcel-noir.vercel.app/?n=4&h=6).
 
 Type a siteswap, pick a classic from the list on the right, or click states in
 the graph to walk your own. If you get back to the state you started from, the

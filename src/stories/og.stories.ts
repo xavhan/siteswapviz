@@ -21,7 +21,7 @@ function preview(pattern: string): HTMLElement {
   const d = el("div", { color: "#666", marginTop: "4px" });
   d.textContent = description;
   const host = el("div", { color: "#999", marginTop: "8px", fontSize: "11px" });
-  host.textContent = `siteswap-viz.vercel.app/p/${pattern}`;
+  host.textContent = `marcel-noir.vercel.app/p/${pattern}`;
   words.append(t, d, host);
 
   box.append(img, words);
