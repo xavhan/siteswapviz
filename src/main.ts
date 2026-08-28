@@ -1,17 +1,7 @@
 import { renderSvg, wireHover } from "./graph";
 import { beatCount, renderLadder } from "./ladder";
 import { buildStage, type Stage } from "./juggler";
-import { buildGraph, type Graph } from "./layout";
-import {
-  ground,
-  parsePattern,
-  patternString,
-  stateOf,
-  throwsFrom,
-  validate,
-  walkOf,
-  type State,
-} from "./siteswap";
+import { createWalk } from "./walk";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const nEl = $<HTMLInputElement>("n");
@@ -26,13 +16,8 @@ const tempoEl = $<HTMLInputElement>("tempo");
 const readoutEl = $("readout");
 const presetsEl = $("presets");
 
-const MAX_H = 9;
+const walk = createWalk();
 
-let n = 3;
-let h = 5;
-let graph: Graph = buildGraph(n, h);
-let walk: State[] = [];
-let throws: number[] = [];
 let beat: number | null = null; // ladder cursor, also the animation's current beat
 let stage: Stage | null = null;
 let stageKey = "";
@@ -41,69 +26,63 @@ let raf = 0;
 let originMs = 0;
 let originBeat = 0;
 let lastWhole = -1;
+let shownHash = "";
 
 const beatMs = () => 820 - Number(tempoEl.value); // slider right = faster
 
 function draw() {
-  nEl.value = String(n);
-  hEl.value = String(h);
-  hEl.min = String(n);
-  const closed = walk.length > 1 && walk[0] === walk[walk.length - 1];
-  const focus =
-    beat === null || !throws.length ? null : closed ? walk[beat % throws.length]! : walk[beat]!;
+  const v = walk.view();
+  nEl.value = String(v.n);
+  hEl.value = String(v.h);
+  hEl.min = String(v.n);
 
-  graphEl.innerHTML = renderSvg({ graph, h, walk, throws, focus });
+  msgEl.textContent = v.message;
+  msgEl.className = v.bad ? "bad" : "";
+  patEl.setAttribute("aria-invalid", String(v.bad)); // brute draws this as a dashed border
+
+  graphEl.innerHTML = renderSvg({
+    graph: v.graph,
+    h: v.h,
+    walk: v.states,
+    throws: v.throws,
+    focus: beat === null ? null : v.stateAtBeat(beat),
+  });
   const svg = graphEl.querySelector("svg")!;
   wireHover(svg);
   svg.addEventListener("click", onClick);
 
-  ladderEl.innerHTML = renderLadder({ throws, walk, h, closed, cursor: beat });
-  syncStage(closed);
+  ladderEl.innerHTML = renderLadder({
+    throws: v.throws,
+    walk: v.states,
+    h: v.h,
+    closed: v.closed,
+    cursor: beat,
+  });
+  syncStage(v.closed, v.throws, v.n);
 
-  readoutEl.textContent = !walk.length
-    ? `${graph.nodes.size} states · ${graph.edges.length} throws · click a state to start walking`
-    : closed
-      ? `${patternString(throws)} — closed walk, period ${throws.length}`
-      : `${patternString(throws) || "—"} — open walk · ${throwsFrom(walk[walk.length - 1]!, h).length} throws from here`;
-  readoutEl.className = closed ? "closed" : "";
-}
+  readoutEl.textContent = !v.states.length
+    ? `${v.graph.nodes.size} states · ${v.graph.edges.length} throws · click a state to start walking`
+    : v.closed
+      ? `${v.pattern} — closed walk, period ${v.period}`
+      : `${v.sequence || "—"} — open walk · ${v.exits} throws from here`;
+  readoutEl.className = v.closed ? "closed" : "";
 
-function say(text: string, bad = false) {
-  msgEl.textContent = text;
-  msgEl.className = bad ? "bad" : "";
-  patEl.setAttribute("aria-invalid", String(bad)); // brute draws this as a dashed border
-}
-
-function rebuild() {
-  graph = buildGraph(n, h);
+  // guarded: draw() runs every animation beat, and browsers throttle replaceState
+  if (v.hash !== shownHash) {
+    shownHash = v.hash;
+    history.replaceState(null, "", `#${v.hash}`);
+    for (const b of presetsEl.querySelectorAll("button"))
+      b.setAttribute("aria-pressed", String(b.dataset.p === v.pattern));
+  }
 }
 
 function onClick(ev: Event) {
   const g = (ev.target as Element).closest(".node") as SVGGElement | null;
   if (!g) return;
-  const s = Number(g.dataset.state);
-
-  if (!walk.length) {
-    walk = [s];
-    throws = [];
-  } else {
-    const last = walk[walk.length - 1]!;
-    const hop = throwsFrom(last, h).find((e) => e.to === s);
-    if (hop) {
-      walk.push(s);
-      throws.push(hop.t);
-    } else {
-      walk = [s]; // unreachable in one throw: start over there
-      throws = [];
-    }
-  }
-
+  walk.stepTo(Number(g.dataset.state));
   beat = null;
-  const closed = walk.length > 1 && walk[0] === walk[walk.length - 1];
-  patEl.value = closed ? patternString(throws) : "";
-  say(closed ? `${patternString(throws)} closes here` : "");
+  patEl.value = walk.view().pattern;
   draw();
-  syncUrl();
 }
 
 /** Well-known patterns, by ball count. Nothing above height 9 — that is the cap. */
@@ -156,94 +135,13 @@ presetsEl.addEventListener("click", (ev) => {
   const p = (ev.target as Element).closest("button")?.dataset.p;
   if (!p) return;
   patEl.value = p;
-  onPattern();
+  walk.setPattern(p);
+  beat = null;
+  draw();
 });
 
-/** Closed patterns round-trip as the pattern; anything else keeps just the graph size. */
-function syncUrl() {
-  const closed = walk.length > 1 && walk[0] === walk[walk.length - 1];
-  const pat = closed ? patternString(throws) : "";
-  history.replaceState(null, "", `#${pat ? `p=${pat}` : `n=${n}&h=${h}`}`);
-  for (const b of presetsEl.querySelectorAll("button"))
-    b.setAttribute("aria-pressed", String(b.dataset.p === pat));
-}
-
-function applyUrl() {
-  const q = new URLSearchParams(location.hash.slice(1));
-  const qn = Number(q.get("n")) || 0;
-  if (qn) {
-    nEl.value = String(qn);
-    hEl.value = String(Number(q.get("h")) || qn);
-    onDims();
-  }
-  patEl.value = q.get("p") ?? (location.hash ? "" : "531");
-  onPattern(); // draws in every branch, empty pattern included
-}
-
-function onPattern() {
-  const raw = patEl.value;
-  if (!raw.trim()) {
-    walk = [];
-    throws = [];
-    say("");
-    draw();
-    return syncUrl();
-  }
-
-  const parsed = parsePattern(raw);
-  if (!parsed) return say("can't read that — digits, or letters a=10, b=11…", true);
-
-  const check = validate(parsed);
-  if (!check.ok) return say(check.error, true);
-
-  const maxT = Math.max(...parsed);
-  if (maxT > MAX_H) return say(`throw ${maxT} is above the ${MAX_H} height cap`, true);
-  if (check.balls < 1) return say("no balls in that pattern", true);
-
-  const notes: string[] = [];
-  if (check.balls !== n) {
-    n = check.balls;
-    notes.push(`balls → ${n}`);
-  }
-  if (maxT > h) {
-    h = maxT;
-    notes.push(`max height → ${h}`);
-  }
-  if (h < n) h = n;
-  rebuild();
-
-  walk = walkOf(parsed, h);
-  throws = parsed;
-  beat = null;
-  const excited = stateOf(parsed, h) !== ground(n);
-  say(
-    [`valid · ${check.balls} balls · period ${parsed.length}`, excited ? "excited state" : "ground state", ...notes]
-      .join(" · "),
-  );
-  draw();
-  syncUrl();
-}
-
-function onDims() {
-  const nextN = Math.max(1, Math.min(MAX_H, Number(nEl.value) || 1));
-  const nextH = Math.max(nextN, Math.min(MAX_H, Number(hEl.value) || nextN));
-  if (nextN === n && nextH === h) return;
-  n = nextN;
-  h = nextH;
-  rebuild();
-  // keep the walk only if every state still exists at this size
-  if (!walk.every((s) => graph.nodes.has(s))) {
-    walk = [];
-    throws = [];
-    patEl.value = "";
-    say("");
-  }
-  draw();
-  syncUrl();
-}
-
 /** Rebuild the stage only when the pattern itself changes — draw() runs every beat. */
-function syncStage(closed: boolean) {
+function syncStage(closed: boolean, throws: number[], balls: number) {
   // an open walk is not periodic, so looping it would animate throws that collide
   // the box is viewport-driven, so its height is part of the identity
   const boxH = Math.max(240, Math.round(stageEl.clientHeight));
@@ -258,7 +156,7 @@ function syncStage(closed: boolean) {
     return;
   }
   playEl.disabled = false;
-  stage = buildStage(throws, throws.reduce((a, b) => a + b, 0) / throws.length, boxH);
+  stage = buildStage(throws, balls, boxH);
   stageEl.appendChild(stage.el);
   if (beat !== null) stage.update(beat);
 }
@@ -270,7 +168,7 @@ function frame(now: number) {
   const whole = Math.floor(at);
   if (whole !== lastWhole) {
     lastWhole = whole;
-    beat = whole % beatCount(throws, true); // keep the other two views on the same beat
+    beat = whole % beatCount(walk.view().throws, true); // keep the other two views on the same beat
     draw();
   }
   raf = requestAnimationFrame(frame);
@@ -323,18 +221,33 @@ window.addEventListener("resize", () => {
 let typing = 0;
 patEl.addEventListener("input", () => {
   clearTimeout(typing);
-  typing = window.setTimeout(onPattern, 180);
-});
-nEl.addEventListener("change", onDims);
-hEl.addEventListener("change", onDims);
-$("clear").addEventListener("click", () => {
-  walk = [];
-  throws = [];
-  patEl.value = "";
-  say("");
-  draw();
-  syncUrl();
+  typing = window.setTimeout(() => {
+    walk.setPattern(patEl.value);
+    beat = null;
+    draw();
+  }, 180);
 });
 
-window.addEventListener("hashchange", applyUrl);
-applyUrl();
+const onDims = () => {
+  walk.setDims(Number(nEl.value), Number(hEl.value));
+  patEl.value = walk.view().pattern;
+  beat = null;
+  draw();
+};
+nEl.addEventListener("change", onDims);
+hEl.addEventListener("change", onDims);
+
+$("clear").addEventListener("click", () => {
+  walk.clear();
+  patEl.value = "";
+  beat = null;
+  draw();
+});
+
+const load = () => {
+  patEl.value = walk.applyHash(location.hash);
+  beat = null;
+  draw();
+};
+window.addEventListener("hashchange", load);
+load();
