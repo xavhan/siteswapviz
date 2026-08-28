@@ -2,7 +2,7 @@
 
 A single-page tool for reading a juggling pattern three ways at once: as an
 animation, as a ladder diagram, and as a walk through a state graph. This file
-is the shared vocabulary — the words the code, the UI and the docs all use for
+is the shared vocabulary, the words the code, the UI and the docs all use for
 the same thing.
 
 ## Notation
@@ -23,8 +23,8 @@ back to the same one.
 _Avoid_: throw length, duration, value
 
 **Hole**:
-A throw of height `0` — an empty hand on that beat. A hole is a real throw in
-the notation, not a gap in it.
+A throw of height `0`, meaning an empty hand on that beat. A hole is a real
+throw in the notation, not a gap in it.
 _Avoid_: zero, rest, pause, skip
 
 **Beat**:
@@ -33,8 +33,8 @@ beats are the right hand, odd beats the left.
 _Avoid_: tick, step, frame
 
 **Period**:
-The number of beats before a siteswap repeats — the length of the written
-pattern.
+The number of beats before a siteswap repeats, which is the length of the
+written pattern.
 _Avoid_: length, cycle length
 
 **Balls**:
@@ -60,8 +60,8 @@ bit per beat. Bit 0 set means a ball is in hand right now and must be thrown.
 _Avoid_: position, configuration, node
 
 **Ground state**:
-The state where the `n` balls land on the next `n` beats with no gaps — what you
-sit in while running a plain cascade or fountain.
+The state where the `n` balls land on the next `n` beats with no gaps, which is
+what you sit in while running a plain cascade or fountain.
 _Avoid_: base state, resting state, home
 
 **Excited state**:
@@ -76,8 +76,8 @@ _Avoid_: level, depth, distance, energy
 
 **Walk**:
 The path of states a pattern or a sequence of clicks traces through the graph.
-A **closed walk** returns to where it started and is therefore a valid siteswap;
-an **open walk** does not and has no notation of its own.
+A **closed walk** returns to where it started and is therefore a valid siteswap.
+An **open walk** does not and has no notation of its own.
 _Avoid_: path, trace, route, tour
 
 ## Views
@@ -99,6 +99,6 @@ again.
 _Avoid_: hold time, carry
 
 **Classic**:
-A well-known named pattern offered as a one-click preset — cascade, fountain,
-shower, box, columns.
+A well-known named pattern offered as a one-click preset, such as the cascade,
+fountain, shower, box or columns.
 _Avoid_: preset, favourite, example, template
