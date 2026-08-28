@@ -170,7 +170,9 @@ function frame(now: number) {
   const whole = Math.floor(at);
   if (whole !== lastWhole) {
     lastWhole = whole;
-    beat = whole % beatCount(walk.view().throws, true); // keep the other two views on the same beat
+    // the ladder window is the loop length; it is a whole number of periods,
+    // so wrapping on it keeps the cursor, the graph and the balls on one beat
+    beat = whole % beatCount(walk.view().throws, true);
     draw();
   }
   raf = requestAnimationFrame(frame);

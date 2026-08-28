@@ -19,8 +19,19 @@ const BOTTOM = 44; // room for the per-beat state strings
 /** Right hand throws on even beats, left on odd — that is what makes odd throws cross. */
 const row = (beat: number) => (beat % 2 === 0 ? Y_R : Y_L);
 
-export const beatCount = (throws: number[], closed: boolean): number =>
-  closed ? Math.min(16, throws.length * Math.max(2, Math.ceil(7 / throws.length))) : throws.length;
+/**
+ * How many beats the ladder draws, which is also how far the animation counts
+ * before it loops. A closed pattern gets a whole number of periods, two if they
+ * fit, never more than 16 beats wide. The whole-number part is load-bearing: the
+ * animation wraps its beat on this, so a window that cut a period in half would
+ * put the cursor out of step with the balls.
+ */
+export const beatCount = (throws: number[], closed: boolean): number => {
+  const p = throws.length;
+  if (!closed) return p;
+  const reps = Math.max(1, Math.min(Math.floor(16 / p), Math.max(2, Math.ceil(7 / p))));
+  return p * reps;
+};
 
 export function renderLadder(v: LadderView): string {
   const { throws, walk, h, closed, cursor } = v;
