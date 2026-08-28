@@ -6,3 +6,8 @@ dist/
 # absolute-path symlinks to design/rules skills outside this repo
 .claude/skills/
 .vercel
+
+*storybook.log
+storybook-static
+
+storybook-static/
