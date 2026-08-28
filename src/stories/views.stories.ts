@@ -58,7 +58,7 @@ export const LadderAtEachBeat: StoryObj = {
   },
 };
 
-/** Every classic as a ladder, for spotting arcs that cross the wrong way. */
+/** Every preset as a ladder, for spotting arcs that cross the wrong way. */
 export const EveryLadder: StoryObj = {
   render: () => {
     const g = grid("460px");

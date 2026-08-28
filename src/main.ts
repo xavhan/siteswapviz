@@ -77,45 +77,54 @@ function onClick(ev: Event) {
   draw();
 }
 
-/** Well-known patterns, by ball count. Nothing above height 9 — that is the cap. */
-const CLASSICS: [string, [string, string][]][] = [
-  ["3 balls", [
+/** Well-known patterns, grouped by the shape of the pattern. Nothing above height 9 — that is the cap. */
+const PRESETS: [string, [string, string][]][] = [
+  ["classics", [
     ["3", "cascade"],
-    ["423", "one up two up"],
     ["441", ""],
     ["531", ""],
-    ["51", "shower"],
-    ["45141", ""],
-    ["50505", "columns"],
-    ["55500", ""],
-    ["4413", ""],
-  ]],
-  ["4 balls", [
     ["4", "fountain"],
-    ["71", "shower"],
-    ["552", ""],
-    ["633", "half box"],
-    ["534", ""],
-    ["5551", ""],
-    ["7531", ""],
-    ["5344", ""],
-  ]],
-  ["5 balls", [
     ["5", "cascade"],
-    ["744", ""],
-    ["645", ""],
-    ["97531", ""],
-    ["66661", ""],
-  ]],
-  ["6+ balls", [
     ["6", "fountain"],
-    ["7", "cascade"],
-    ["8", "fountain"],
-    ["9", "cascade"],
+    ["753", ""],
+    ["663", ""],
+    ["8844", ""],
+    ["75661", ""],
+    ["97531", ""],
+    ["756", ""],
+  ]],
+  // these start away from the ground state — you have to climb into them
+  ["excited", [
+    ["51", "shower"],
+    ["71", "shower"],
+    ["91", "shower"],
+    ["771", ""],
+    ["561", ""],
+    ["7571", ""],
+    ["9151", ""],
+    ["801", ""],
+    ["50505", "columns"],
+    ["55055", ""],
+    ["61616", ""],
+    ["8040", ""],
+  ]],
+  ["misc", [
+    ["123456789", "the climb"],
+    ["456789123", ""],
+    ["6316131", ""],
+    ["531441", ""],
+    ["45141", ""],
+    ["55500", "flash"],
+    ["88441", ""],
+    ["423", "one up two up"],
+    ["633", "half box"],
+    ["330", ""],
+    ["2", "a hold"],
+    ["1", "hand to hand"],
   ]],
 ];
 
-presetsEl.innerHTML = CLASSICS.map(
+presetsEl.innerHTML = PRESETS.map(
   ([group, items]) =>
     `<h3>${group}</h3>` +
     items

@@ -45,21 +45,21 @@ export function grid(min = "320px"): HTMLElement {
   });
 }
 
-/** The classics, as the app lists them. */
+/** A spread of the app's presets: ground shapes, excited ones, oddities. */
 export const PATTERNS = [
   "3",
   "441",
   "531",
-  "51",
-  "423",
-  "50505",
-  "55500",
   "4",
-  "552",
-  "633",
-  "7531",
-  "5",
-  "744",
+  "753",
+  "663",
+  "8844",
+  "75661",
   "97531",
-  "9",
+  "51",
+  "771",
+  "9151",
+  "50505",
+  "123456789",
+  "330",
 ];

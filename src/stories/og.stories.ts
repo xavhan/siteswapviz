@@ -41,8 +41,8 @@ export const Single: StoryObj = {
   render: ({ pattern }) => preview(String(pattern)),
 };
 
-/** The whole classics list, to check the fit holds from a 3 up to a 9. */
-export const EveryClassic: StoryObj = {
+/** The whole preset list, to check the fit holds from a 3 up to a 9. */
+export const EveryPreset: StoryObj = {
   render: () => {
     const g = grid("380px");
     for (const p of PATTERNS) {
