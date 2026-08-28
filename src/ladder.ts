@@ -1,13 +1,6 @@
 import { CHAR_W } from "./layout";
-import { stateString, throwChar, type State } from "./siteswap";
-
-export type LadderView = {
-  throws: number[];
-  walk: State[];
-  h: number;
-  closed: boolean;
-  cursor: number | null;
-};
+import { stateString, throwChar } from "./siteswap";
+import type { WalkView } from "./walk";
 
 const Y_R = 52;
 const Y_L = 112;
@@ -33,8 +26,8 @@ export const beatCount = (throws: number[], closed: boolean): number => {
   return p * reps;
 };
 
-export function renderLadder(v: LadderView): string {
-  const { throws, walk, h, closed, cursor } = v;
+export function renderLadder(v: WalkView, cursor: number | null): string {
+  const { throws, h, closed } = v;
   if (!throws.length) return "";
 
   const p = throws.length;
@@ -46,7 +39,6 @@ export function renderLadder(v: LadderView): string {
   const height = Y_L + BOTTOM;
 
   const throwAt = (b: number) => throws[((b % p) + p) % p]!;
-  const stateAt = (b: number) => (closed ? walk[b % p]! : walk[b]!);
 
   const arcs: string[] = [];
   const LEFT = PAD_L - 24;
@@ -95,9 +87,11 @@ export function renderLadder(v: LadderView): string {
         `<text class="throwno" x="${x + 9}" y="${row(b) + (row(b) === Y_R ? -9 : 13)}">${throwChar(throwAt(b))}</text>`,
       );
     }
-    marks.push(
-      `<text class="slab${cursor === b ? " at" : ""}" x="${x}" y="${Y_L + 30}">${stateString(stateAt(b), h)}</text>`,
-    );
+    const at = v.stateAtBeat(b);
+    if (at !== null)
+      marks.push(
+        `<text class="slab${cursor === b ? " at" : ""}" x="${x}" y="${Y_L + 30}">${stateString(at, h)}</text>`,
+      );
   }
 
   const line =

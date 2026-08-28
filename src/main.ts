@@ -2,7 +2,7 @@ import { renderSvg, wireHover } from "./graph";
 import { beatCount, renderLadder } from "./ladder";
 import { buildStage, type Stage } from "./juggler";
 import { MAX_HEIGHT } from "./siteswap";
-import { createWalk } from "./walk";
+import { createWalk, type WalkView } from "./walk";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const nEl = $<HTMLInputElement>("n");
@@ -42,25 +42,13 @@ function draw() {
   msgEl.className = v.bad ? "bad" : "";
   patEl.setAttribute("aria-invalid", String(v.bad)); // brute draws this as a dashed border
 
-  graphEl.innerHTML = renderSvg({
-    graph: v.graph,
-    h: v.h,
-    walk: v.states,
-    throws: v.throws,
-    focus: beat === null ? null : v.stateAtBeat(beat),
-  });
+  graphEl.innerHTML = renderSvg(v, beat === null ? null : v.stateAtBeat(beat));
   const svg = graphEl.querySelector("svg")!;
   wireHover(svg);
   svg.addEventListener("click", onClick);
 
-  ladderEl.innerHTML = renderLadder({
-    throws: v.throws,
-    walk: v.states,
-    h: v.h,
-    closed: v.closed,
-    cursor: beat,
-  });
-  syncStage(v.closed, v.throws, v.n);
+  ladderEl.innerHTML = renderLadder(v, beat);
+  syncStage(v);
 
   readoutEl.textContent = !v.states.length
     ? `${v.graph.nodes.size} states · ${v.graph.edges.length} throws · click a state to start walking`
@@ -143,11 +131,11 @@ presetsEl.addEventListener("click", (ev) => {
 });
 
 /** Rebuild the stage only when the pattern itself changes — draw() runs every beat. */
-function syncStage(closed: boolean, throws: number[], balls: number) {
+function syncStage(v: WalkView) {
   // an open walk is not periodic, so looping it would animate throws that collide
   // the box is viewport-driven, so its height is part of the identity
   const boxH = Math.max(240, Math.round(stageEl.clientHeight));
-  const key = closed ? `${throws.join(",")}@${boxH}` : "";
+  const key = v.closed ? `${v.throws.join(",")}@${boxH}` : "";
   if (key === stageKey) return;
   stageKey = key;
   stageEl.innerHTML = "";
@@ -158,7 +146,7 @@ function syncStage(closed: boolean, throws: number[], balls: number) {
     return;
   }
   playEl.disabled = false;
-  stage = buildStage(throws, balls, boxH);
+  stage = buildStage(v, boxH);
   stageEl.appendChild(stage.el);
   if (beat !== null) stage.update(beat);
 }

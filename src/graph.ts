@@ -1,17 +1,10 @@
-import type { Graph } from "./layout";
 import { stateString, throwChar, throwsFrom, type State } from "./siteswap";
-
-export type View = {
-  graph: Graph;
-  h: number;
-  walk: State[];
-  throws: number[];
-  focus: State | null;
-};
+import type { WalkView } from "./walk";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
-export function renderSvg({ graph, h, walk, throws, focus }: View): string {
+export function renderSvg(v: WalkView, focus: State | null): string {
+  const { graph, h, states: walk, throws, closed } = v;
   // edges on the walk, keyed by "from>t" so repeated states keep their own throw
   const hot = new Set<string>();
   for (let i = 0; i < throws.length; i++) hot.add(`${walk[i]}>${throws[i]}`);
@@ -19,7 +12,6 @@ export function renderSvg({ graph, h, walk, throws, focus }: View): string {
 
   // While a walk is open, its last state is the cursor: show every throw
   // available from there. A closed walk is finished, so it gets no options.
-  const closed = walk.length > 1 && walk[0] === walk[walk.length - 1];
   const cursor = walk.length && !closed ? walk[walk.length - 1]! : null;
   const nextEdge = new Set<string>();
   const nextNode = new Set<State>();

@@ -1,4 +1,5 @@
 import { MAX_HEIGHT, throwChar } from "./siteswap";
+import type { WalkView } from "./walk";
 
 const NS = "http://www.w3.org/2000/svg";
 
@@ -18,7 +19,8 @@ const side = (beat: number) => ((((beat % 2) + 2) % 2) === 0 ? 1 : -1);
 
 export type Stage = { el: SVGSVGElement; update: (beat: number) => void };
 
-export function buildStage(throws: number[], balls: number, boxH: number): Stage {
+export function buildStage(v: WalkView, boxH: number): Stage {
+  const { throws, n: balls } = v;
   const p = throws.length;
   const maxT = Math.max(...throws, 1);
   const handY = boxH - FLOOR;
