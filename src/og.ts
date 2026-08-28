@@ -43,8 +43,11 @@ export const label = (pattern: string): string =>
  * cross, even ones come back to the same side, and every distinct path is
  * drawn exactly once, so a cascade is two crossing arcs and a fountain two
  * narrow ones.
+ *
+ * `caption` overrides the writing on the band, for the picture a link with no
+ * pattern in it gets.
  */
-export function ogSvg(throws: number[], w = OG_W, h = OG_H): string {
+export function ogSvg(throws: number[], w = OG_W, h = OG_H, caption?: string): string {
   const p = throws.length;
   // With an odd period a throw leaves the other hand next time round, so it
   // takes two periods to make every path the pattern actually flies.
@@ -89,7 +92,7 @@ export function ogSvg(throws: number[], w = OG_W, h = OG_H): string {
     )
     .join("");
 
-  const text = label(throws.map(throwChar).join(""));
+  const text = label(caption ?? throws.map(throwChar).join(""));
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
   <rect width="${w}" height="${h}" fill="#ffffff" />

@@ -56,6 +56,19 @@ export const EveryClassic: StoryObj = {
   },
 };
 
+/** What a link with no pattern in it gets: the site's own shape and name. */
+export const NoPattern: StoryObj = {
+  render: () => {
+    const svg = ogSvg([5, 3, 1], OG_W, OG_H, "MARCEL NOIR").replace(
+      "<svg ",
+      '<svg style="width:100%;height:auto;display:block;max-width:620px" ',
+    );
+    const host = el("div");
+    host.innerHTML = svg;
+    return host;
+  },
+};
+
 /** Extremes: the shortest pattern, the tallest throw, holes, a long period. */
 export const EdgeCases: StoryObj = {
   render: () => {

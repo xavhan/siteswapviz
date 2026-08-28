@@ -31,3 +31,9 @@ test("the pattern is written under the line, cut when it is long", () => {
   expect(label("5315315315315")).toBe("53153153153…");
   expect(label("5315315315315").length).toBe(12);
 });
+
+test("a caption replaces the pattern under the drawing", () => {
+  const svg = ogSvg([5, 3, 1], 1200, 630, "MARCEL NOIR");
+  expect(svg).toContain(">MARCEL NOIR</text>");
+  expect(svg).not.toContain(">531</text>");
+});
